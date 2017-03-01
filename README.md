@@ -1,7 +1,7 @@
-Git New Task
-------------
+Git New Pull Request
+--------------------
 
-This script will create a new branch with the *issue* id on your repository and change from **Stage: Analysis** to **Stage: In Progress**
+This script will create a new pull request
 
 How to use
 ----------
@@ -18,7 +18,7 @@ Usage:
 
 ```sh
 cd /path/your-project
-g-new-task issueID
+g-new-pr {args}
 
 ```
 
@@ -32,7 +32,7 @@ Install
 To install into your machine run the commands bellow:
 
 ```sh
-curl -sL https://raw.githubusercontent.com/euclecio/g-new-task/master/g-new-task.sh -o /usr/local/bin/g-new-task
-chmod a+x /usr/local/bin/g-new-task
+curl -sL https://raw.githubusercontent.com/euclecio/g-new-pr/master/g-new-pr.sh -o /usr/local/bin/g-new-pr
+chmod a+x /usr/local/bin/g-new-pr
 ```
 If it didn't work, try run it with `sudo`

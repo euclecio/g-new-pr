@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function getHelp {
-    echo "Create a pull request
+    echo "Create a new pull request
 With no arguments it asks for the dynamically.
 
     -d or --dumb is the mode where everything is asked
