@@ -18,6 +18,7 @@ if [ -z ${GITHUB_USER+x} ] || [ -z ${GITHUB_PASSWORD+x} ] && [ -z ${GITHUB_TOKEN
     GITHUB_PASSWORD
     OR
     GITHUB_TOKEN\e[0m\n"
+    exit 1
 fi
 
 verbose=0
@@ -85,9 +86,9 @@ printf "\n"
 data="{ \"title\": \"$title\", \"body\": \"$description **Criado via CLI**\", \"head\": \"$originBranch\",  \"base\": \"$destinationBranch\" }"
 
 if [ -z ${GITHUB_TOKEN+x} ]; then
-    curl -s -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data" > /dev/null
+    curl -s -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data"
 else
-    curl -s -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data" > /dev/null
+    curl -s -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data"
 fi
 
 echo "New Pull Request was created"
