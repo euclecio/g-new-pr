@@ -3,12 +3,11 @@
 repo_path=$(git config --get remote.origin.url | sed -r 's/(.*:)(.*)(\..*)/\2/')
 
 function getHelp {
-    echo "Create a new pull request
+    echo "Create a new Pull Request
 With no arguments it asks for the dynamically.
 
-    -c or --custom is the mode where everything is asked
-    -dt or --disableTests to disable unit tests from running
-    -ds or --disableSchema to disable schema validation from running
+    -h|--help       Show this help, then exit
+    -c|--custom     The mode where everything is asked
 \n"
 }
 
@@ -21,10 +20,7 @@ if [ -z ${GITHUB_USER+x} ] || [ -z ${GITHUB_PASSWORD+x} ] && [ -z ${GITHUB_TOKEN
     exit 1
 fi
 
-verbose=0
-dumb=0
-disableTests=0
-disableSchema=0
+custom=0
 
 args=("$@")
 for i in "$@"
@@ -32,15 +28,8 @@ do
     if [[ "$i" = "-h" ]] || [[ "$i" = "--help" ]]; then
        printf "$(getHelp)"
        exit 0
-    elif [[ "$i" = "-v" ]] || [[ "$i" = "--verbose" ]]; then
-        verbose=1
-        echo "Verbose found"
     elif [[ "$i" = "-c" ]] || [[ "$i" = "--custom" ]]; then
-        dumb=1
-    elif [[ "$i" = "-dt" ]] || [[ "$i" = "--disable-tests" ]]; then
-        disableTests=1
-    elif [[ "$i" = "-ds" ]] || [[ "$i" = "--disable-schema" ]]; then
-        disableSchema=1
+        custom=1
     elif [[ "$i" =~ ^- ]]; then
         echo "Invalid parameter: $i"
         exit 1
@@ -55,8 +44,31 @@ get_current_branch() {
 echo "Making a push of your local branch"
 git push origin $(get_current_branch)
 
+originBranch=""
+destinationBranch=""
+issue_number=""
 
-[[ $dumb -eq 1 ]] && { printf "\n"
+printf "\n"
+read -p "This PR is related to which issue (Default: none):" issue_number
+
+$issue_desc=""
+[ ! -z ${$issue_number+x} ] && {
+    $issue_desc="# Este PR é relacionado a qual issue?\n\nConnected to #$issue_number"
+
+    if [ ! -z ${GITHUB_TOKEN+x} ]; then
+        issue_exists=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number | grep message)
+    else
+        issue_exists=$(curl -s -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/issues/$issue_number | grep message)
+    fi
+
+    if [[ $issue_exists == *"Not Found"* ]]; then
+        printf "\e[33mNo issue with this ID was found\e[0m\n"
+        exit 1
+    fi
+}
+
+[[ $custom -eq 1 ]] && {
+    printf "\n"
     read -p "Type your origin branch (Default: $(get_current_branch)):" originBranch
 }
 
@@ -64,7 +76,7 @@ git push origin $(get_current_branch)
     originBranch=$(get_current_branch)
 }
 
-[ $dumb -eq 1 ] && {
+[ $custom -eq 1 ] && {
     printf "\n"
     read -p "Type your destination branch (Default: master):" destinationBranch
 }
@@ -74,21 +86,32 @@ git push origin $(get_current_branch)
 }
 
 printf "\n"
-
 read -p "Type the title of your pull request (Default: $originBranch):" title
+
 [ -z ${$title+x} ] && {
     title=$originBranch
 }
+
 printf "\n"
-read -p "Type the description (at least relate with a card):" description
+read -p "Type any additional information (optional):" addinfo
 printf "\n"
 
-data="{ \"title\": \"$title\", \"body\": \"$description **Criado via CLI**\", \"head\": \"$originBranch\",  \"base\": \"$destinationBranch\" }"
+data="{ \"title\": \"$title\", \"body\": \"$issue_desc \n\n$addinfo \n\n**Criado via CLI**\", \"head\": \"$originBranch\",  \"base\": \"$destinationBranch\" }"
 
 if [ -z ${GITHUB_TOKEN+x} ]; then
     curl -s -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data"
 else
     curl -s -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data"
 fi
+
+[ ! -z ${$issue_number+x} ] && {s
+    if [ ! -z ${GITHUB_TOKEN+x} ]; then
+        curl -s -X DELETE -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels/Stage%3A%In%20Progress >/dev/null
+        curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels -d '["Stage: Review"]' >/dev/null
+    else
+        curl -s -X DELETE -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/issues/$issue_number/labels/Stage%3A%20In%20Progress >/dev/null
+        curl -s -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/issues/$issue_number/labels -d '["Stage: Review"]' >/dev/null
+    fi
+}
 
 echo "New Pull Request was created"
