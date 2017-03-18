@@ -48,9 +48,9 @@ destinationBranch=""
 issue_number=""
 
 printf "\n"
-read -p "This PR is related to which issue (Default: none):" issue_number
+read -p "This PR is related to which issue (Default: none): " issue_number
 
-$issue_desc=""
+issue_desc=""
 [ ! -z ${$issue_number+x} ] && {
     $issue_desc="# Este PR é relacionado a qual issue?\n\nConnected to #$issue_number"
 
@@ -68,7 +68,7 @@ $issue_desc=""
 
 [[ $custom -eq 1 ]] && {
     printf "\n"
-    read -p "Type your origin branch (Default: $(get_current_branch)):" originBranch
+    read -p "Type your origin branch (Default: $(get_current_branch)): " originBranch
 }
 
 [ -z ${$originBranch+x} ] && {
@@ -77,7 +77,7 @@ $issue_desc=""
 
 [ $custom -eq 1 ] && {
     printf "\n"
-    read -p "Type your destination branch (Default: master):" destinationBranch
+    read -p "Type your destination branch (Default: master): " destinationBranch
 }
 
 [ -z ${$destinationBranch+x} ] && {
@@ -85,14 +85,14 @@ $issue_desc=""
 }
 
 printf "\n"
-read -p "Type the title of your pull request (Default: $originBranch):" title
+read -p "Type the title of your pull request (Default: $originBranch): " title
 
 [ -z ${$title+x} ] && {
     title=$originBranch
 }
 
 printf "\n"
-read -p "Type any additional information (optional):" addinfo
+read -p "Type any additional information (optional): " addinfo
 printf "\n"
 
 data="{ \"title\": \"$title\", \"body\": \"$issue_desc \n\n$addinfo \n\n**Criado via CLI**\", \"head\": \"$originBranch\",  \"base\": \"$destinationBranch\" }"
