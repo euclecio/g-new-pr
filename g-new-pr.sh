@@ -34,7 +34,6 @@ do
         echo "Invalid parameter: $i"
         exit 1
     fi
-    counter=$[$counter + 1]
 done
 
 get_current_branch() {
