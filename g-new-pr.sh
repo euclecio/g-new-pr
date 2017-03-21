@@ -118,7 +118,6 @@ else
     request_return=$(curl -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data")
 fi
 
-
 if [[ $request_return == *"Validation Failed"* ]]; then
     exit 1
 fi
@@ -134,6 +133,7 @@ fi
 }
 
 echo "New Pull Request was created"
-pr_number=${request_return} | python -m json.tool | sed -n -e '/"number":/ s/^.*"\(.*\)".*/\1/p'
-printf "https://github.com/$repo_path/pull/$pr_number"
-printf "\n"
+pr_url=$(echo ${request_return} | python -m json.tool | sed -n -e '/"html_url":/ s/^.*"\(.*\)".*/\1/p')
+pr_url=(${pr_url[@]})
+echo "${pr_url[0]}"
+
