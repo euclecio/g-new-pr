@@ -111,11 +111,12 @@ printf "\n"
 data="{ \"title\": \"$title\", \"body\": \"$issue_desc \n\n$addinfo \n\n**Criado via CLI**\", \"head\": \"$originBranch\",  \"base\": \"$destinationBranch\" }"
 
 if [ -z ${GITHUB_TOKEN+x} ]; then
-    request_return=$(curl -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data")
+    request_return=$(curl -s -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data")
     issue_url=$(echo ${request_return} | python -m json.tool | sed -n -e '/"issue_url":/ s/^.*"\(.*\)".*/\1/p')
-    curl -s -H "Authorization: token $GITHUB_TOKEN" "$issue_url/labels" -d "$stageLabel"
+    echo $issue_url/labels
+    curl -s -H "Authorization: token $GITHUB_TOKEN" $issue_url/labels -d "$stageLabel"
 else
-    request_return=$(curl -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data")
+    request_return=$(curl -s -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data")
 fi
 
 if [[ $request_return == *"Validation Failed"* ]]; then
