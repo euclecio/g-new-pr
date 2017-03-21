@@ -37,7 +37,7 @@ do
 done
 
 get_current_branch() {
-    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ \1/'
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ \1/ ' | tr -d '[:space:]'
 }
 
 echo "Making a push of your local branch"
@@ -95,9 +95,10 @@ addinfo=""
 printf "\n"
 read -p "Type any additional information (optional): " addinfo
 
-printf "\n"
-read -p "Type the stage of your PR (Default: Review): " stage
-printf "\n"
+[ $custom -eq 1 ] && {
+    printf "\n"
+    read -p "Type the stage of your PR (Default: Review): " stage
+}
 
 [ -z "$stage" ] && {
     stageLabel="[\"Stage: Review\"]"
@@ -105,12 +106,20 @@ printf "\n"
     stageLabel="[\"Stage: $stage\"]"
 }
 
+printf "\n"
+
 data="{ \"title\": \"$title\", \"body\": \"$issue_desc \n\n$addinfo \n\n**Criado via CLI**\", \"head\": \"$originBranch\",  \"base\": \"$destinationBranch\" }"
 
 if [ -z ${GITHUB_TOKEN+x} ]; then
-    curl -s -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data"
+    request_return=$(curl -s -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data")
+    # curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels -d "$stageLabel" >/dev/null
 else
-    curl -s -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data"
+    request_return=$(curl -s -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data")
+    # curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels -d "$stageLabel" >/dev/null
+fi
+
+if [[ $request_return == *"Validation Failed"* ]]; then
+    exit 1
 fi
 
 [ ! -z "$issue_number" ] && {
