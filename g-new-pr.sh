@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+if [ ! $(git rev-parse --is-inside-work-tree) ]; then
+    exit 1;
+fi
 repo_path=$(git config --get remote.origin.url | sed -r 's/(.*:)(.*)(\..*)/\2/')
 
 function getHelp {
