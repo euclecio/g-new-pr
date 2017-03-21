@@ -112,10 +112,8 @@ data="{ \"title\": \"$title\", \"body\": \"$issue_desc \n\n$addinfo \n\n**Criado
 
 if [ -z ${GITHUB_TOKEN+x} ]; then
     request_return=$(curl -s -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data")
-    # curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels -d "$stageLabel" >/dev/null
 else
     request_return=$(curl -s -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data")
-    # curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels -d "$stageLabel" >/dev/null
 fi
 
 if [[ $request_return == *"Validation Failed"* ]]; then
@@ -124,7 +122,7 @@ fi
 
 [ ! -z "$issue_number" ] && {
     if [ ! -z ${GITHUB_TOKEN+x} ]; then
-        curl -s -X DELETE -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels/Stage%3A%In%20Progress >/dev/null
+        curl -s -X DELETE -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels/Stage%3A%20In%20Progress >/dev/null
         curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels -d '["Stage: Review"]' >/dev/null
     else
         curl -s -X DELETE -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/issues/$issue_number/labels/Stage%3A%20In%20Progress >/dev/null
