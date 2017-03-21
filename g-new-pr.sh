@@ -117,7 +117,6 @@ if [ ! -z ${GITHUB_TOKEN+x} ]; then
 else
     request_return=$(curl -s -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data")
     issue_url=$(echo ${request_return} | python -m json.tool | sed -n -e '/"issue_url":/ s/^.*"\(.*\)".*/\1/p')
-    curl -s -H "Authorization: token $GITHUB_TOKEN" "$issue_url/labels" -d "$stageLabel" >/dev/null
     curl -s -u $GITHUB_USER:$GITHUB_PASSWORD "$issue_url/labels" -d "$stageLabel" >/dev/null
 fi
 
