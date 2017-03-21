@@ -51,8 +51,8 @@ printf "\n"
 read -p "This PR is related to which issue (Default: none): " issue_number
 
 issue_desc=""
-[ ! -z ${$issue_number+x} ] && {
-    $issue_desc="# Este PR é relacionado a qual issue?\n\nConnected to #$issue_number"
+[ ! -z "$issue_number" ] && {
+    issue_desc="# Este PR é relacionado a qual issue?\n\nConnected to #$issue_number"
 
     if [ ! -z ${GITHUB_TOKEN+x} ]; then
         issue_exists=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number | grep message)
@@ -71,7 +71,7 @@ issue_desc=""
     read -p "Type your origin branch (Default: $(get_current_branch)): " originBranch
 }
 
-[ -z ${$originBranch+x} ] && {
+[ -z "$originBranch" ] && {
     originBranch=$(get_current_branch)
 }
 
@@ -80,20 +80,30 @@ issue_desc=""
     read -p "Type your destination branch (Default: master): " destinationBranch
 }
 
-[ -z ${$destinationBranch+x} ] && {
+[ -z "$destinationBranch" ] && {
     destinationBranch="master"
 }
 
 printf "\n"
-read -p "Type the title of your pull request (Default: $originBranch): " title
+read -p "Type the title of your PR (Default: $originBranch): " title
 
-[ -z ${$title+x} ] && {
+[ -z "$title" ] && {
     title=$originBranch
 }
 
+addinfo=""
 printf "\n"
 read -p "Type any additional information (optional): " addinfo
+
 printf "\n"
+read -p "Type the stage of your PR (Default: Review): " stage
+printf "\n"
+
+[ -z "$stage" ] && {
+    stageLabel="[\"Stage: Review\"]"
+} || {
+    stageLabel="[\"Stage: $stage\"]"
+}
 
 data="{ \"title\": \"$title\", \"body\": \"$issue_desc \n\n$addinfo \n\n**Criado via CLI**\", \"head\": \"$originBranch\",  \"base\": \"$destinationBranch\" }"
 
@@ -103,7 +113,7 @@ else
     curl -s -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data"
 fi
 
-[ ! -z ${$issue_number+x} ] && {s
+[ ! -z "$issue_number" ] && {
     if [ ! -z ${GITHUB_TOKEN+x} ]; then
         curl -s -X DELETE -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels/Stage%3A%In%20Progress >/dev/null
         curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels -d '["Stage: Review"]' >/dev/null
