@@ -112,11 +112,12 @@ data="{ \"title\": \"$title\", \"body\": \"$issue_desc \n\n$addinfo \n\n**Criado
 
 if [ -z ${GITHUB_TOKEN+x} ]; then
     request_return=$(curl -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data")
+    issue_url=${request_return} | python -m json.tool | sed -n -e '/"issue_url":/ s/^.*"\(.*\)".*/\1/p'
+    # curl -s -H "Authorization: token $GITHUB_TOKEN" "$issue_url/labels" -d "$stageLabel" >/dev/null
 else
     request_return=$(curl -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data")
 fi
 
-printf request_return
 
 if [[ $request_return == *"Validation Failed"* ]]; then
     exit 1
@@ -133,3 +134,6 @@ fi
 }
 
 echo "New Pull Request was created"
+pr_number=${request_return} | python -m json.tool | sed -n -e '/"number":/ s/^.*"\(.*\)".*/\1/p'
+printf "https://github.com/$repo_path/pull/$pr_number"
+printf "\n"
