@@ -111,10 +111,12 @@ printf "\n"
 data="{ \"title\": \"$title\", \"body\": \"$issue_desc \n\n$addinfo \n\n**Criado via CLI**\", \"head\": \"$originBranch\",  \"base\": \"$destinationBranch\" }"
 
 if [ -z ${GITHUB_TOKEN+x} ]; then
-    request_return=$(curl -s -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data")
+    request_return=$(curl -X POST -H "Content-Type: application/json" -u $GITHUB_USER:$GITHUB_PASSWORD https://api.github.com/repos/$repo_path/pulls -d "$data")
 else
-    request_return=$(curl -s -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data")
+    request_return=$(curl -X POST -H "Content-Type: application/json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/pulls -d "$data")
 fi
+
+printf request_return
 
 if [[ $request_return == *"Validation Failed"* ]]; then
     exit 1
