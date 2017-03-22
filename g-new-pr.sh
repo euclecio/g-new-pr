@@ -143,5 +143,5 @@ pr_url=(${pr_url[@]})
 echo "${pr_url[0]}"
 
 [ ! -z ${BROWSER+x}  ] && {
-    "$BROWSER" "$pr_url"
+    "$BROWSER" "${pr_url[0]}"
 }
