@@ -48,10 +48,14 @@ git push origin $(get_current_branch)
 
 originBranch=""
 destinationBranch=""
-issue_number=""
+issue_number=$(get_current_branch)
 
 printf "\n"
-read -p "This PR is related to which issue (Default: none): " issue_number
+read -p "This PR is related to which issue (Default: $(get_current_branch)): " issue_number_custom
+
+[ ! -z "$issue_number_custom" ] && {
+    issue_number=$issue_number_custom
+}
 
 issue_desc=""
 [ ! -z "$issue_number" ] && {
