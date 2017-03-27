@@ -51,14 +51,14 @@ destinationBranch=""
 issue_number=$(get_current_branch)
 
 printf "\n"
-read -p "This PR is related to which issue (Default: $(get_current_branch)): " issue_number_custom
+read -p "This PR is related to which issue (Default: $(get_current_branch) or N for none): " issue_number_custom
 
 [ ! -z "$issue_number_custom" ] && {
     issue_number=$issue_number_custom
 }
 
 issue_desc=""
-[ ! -z "$issue_number" ] && {
+[ ! -z "$issue_number" ] && [ "$issue_number" != "N" ] && {
     issue_desc="# Este PR é relacionado a qual issue?\n\nConnected to #$issue_number"
 
     if [ ! -z ${GITHUB_TOKEN+x} ]; then
@@ -131,7 +131,7 @@ if [[ $request_return == *"Validation Failed"* ]]; then
     exit 1
 fi
 
-[ ! -z "$issue_number" ] && {
+[ ! -z "$issue_number" ] && [ "$issue_number" != "N" ] && {
     if [ ! -z ${GITHUB_TOKEN+x} ]; then
         curl -s -X DELETE -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels/Stage%3A%20In%20Progress >/dev/null
         curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$repo_path/issues/$issue_number/labels -d '["Stage: Review"]' >/dev/null
